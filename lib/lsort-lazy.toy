@@ -1,0 +1,19 @@
+# $Id: lsort-lazy.toy,v 1.1 2011/10/22 12:34:32 mit-sato Exp $
+
+# sort list lazy version
+#
+# Usage: lsort (list) [order: > | <]
+#    1) lsort-lazy list           ... sort by ascending
+#    2) lsort-lazy list order: >  ... same as 1)
+#    3) lsort-lazy list order: <  ... sort by descending
+#
+
+defun lsort-lazy (&l order: cmp) {
+    if {[$l len] <= 1} then: {return $l};
+    if [set? cmp] else: {set cmp >};
+    set pivot [$l >>];
+
+    return [[lsort-lazy {$l filter {| i | $pivot $cmp $i}} order: $cmp]
+	    concat $pivot
+	    [lsort-lazy {$l filter {| i | ! [$pivot $cmp $i]}} order: $cmp]];
+};

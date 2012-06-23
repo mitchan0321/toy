@@ -1,0 +1,17 @@
+# $Id: fact-Ycombi.toy,v 1.2 2012/03/06 06:09:31 mit-sato Exp $
+
+# factorical calc with Y combinatore.
+# [Y [fun (f) {fun (x) {if {$x <= 1} then: {return 1}; $x * [$f [$x - 1]]}}]] X
+
+print "input feb number => ";
+read x;
+println [
+    [Y [
+	fun (f) {
+	    fun (x) {
+	        if {$x <= 1} then: {return 1};
+		$x * [$f [$x - 1]];
+	    }
+	}
+    ]] [[$x split],0 int];
+];

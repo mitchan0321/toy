@@ -1,0 +1,14 @@
+# $Id: head.toy,v 1.1 2011/09/04 13:00:54 mit-sato Exp $
+
+# like the UNIX head command.
+
+defun head (n file) {
+    {
+	1 each to: $n do: {
+	    if {read a}
+	    then: {print $a}
+	    else: {break};
+	};
+	println;
+    } << $file;
+};

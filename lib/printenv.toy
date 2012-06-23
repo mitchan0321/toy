@@ -1,0 +1,10 @@
+# $Id: printenv.toy,v 1.3 2009/05/10 10:44:04 mit-sato Exp $
+
+#
+# print environment variable
+#
+defun printenv () {
+    [msort [[$ENV keys] map {| i | "" . $i}]] each do: {| i |
+	println $i "=" $ENV,$i;
+    };
+};

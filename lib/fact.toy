@@ -1,0 +1,11 @@
+# $Id: fact.toy,v 1.4 2009/07/18 11:19:09 mit-sato Exp $
+
+# calc fact
+
+defun fact (n) {
+    if {$n < 1}
+    then: 1
+    else: {
+	$n * [fact [$n - 1]];
+    };
+};

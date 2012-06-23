@@ -1,0 +1,11 @@
+# $Id: tak.toy,v 1.1 2011/09/04 13:00:54 mit-sato Exp $
+
+# takeuchi function
+
+defun tak (x y z) {
+    if [$x <= $y] then: {return $z};
+
+    tak [tak [$x - 1] $y $z]
+	[tak [$y - 1] $z $x]
+	[tak [$z - 1] $x $y];
+};

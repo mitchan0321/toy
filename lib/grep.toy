@@ -1,0 +1,21 @@
+# $Id: grep.toy,v 1.5 2009/09/23 07:07:35 mit-sato Exp $
+# grep
+
+defun grep (pat file) {
+    set f `File(mode: i $file);
+    try {
+	set n 1;
+	$f each do: {| r |
+	    if {$r =~ $pat} then: {
+		print $file ":" $n ": " $r;
+	    };
+	    $n ++;
+	};
+    }
+    fin: {
+	$f close;
+    };
+    println;
+
+    true;
+};

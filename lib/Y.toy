@@ -1,0 +1,14 @@
+# $Id: Y.toy,v 1.2 2012/03/06 06:09:31 mit-sato Exp $
+
+# Y Combinator
+defun Y(f) {
+    [fun (g) {
+	fun (m) {
+	    [$f [$g $g]] $m;
+	}
+    }] [fun (g) {
+	fun (m) {
+	    [$f [$g $g]] $m;
+        }
+    }];
+};

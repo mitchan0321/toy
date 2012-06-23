@@ -1,0 +1,23 @@
+#!/bin/sh
+
+PROG=../toysh
+
+if [ ! -f "setup.toy" ]; then
+	ln -s ../setup.toy setup.toy
+fi
+
+for f in [0-9]*.toy; do
+	b=`basename $f .toy`
+	echo -n test $f ": " `head -1 $f` ": "
+	$PROG $f > tmp 2> /dev/null
+#	valgrind $PROG $f > tmp
+	diff ${b}.res tmp > tmp.diff
+	if [ $? -ne 0 ]; then
+		echo "NG"
+	else
+		echo "OK"
+	fi
+	cat tmp.diff
+done
+
+rm -f tmp tmp.diff

@@ -1,0 +1,16 @@
+# $Id: start-interp.toy,v 1.1 2012/03/01 12:33:31 mit-sato Exp $
+
+# Sample startup file.
+# To put name as "$HOME/.toyrc" this file.
+
+if {defvar? INTERACTIVE}
+then: {
+    trap SIGINT {throw ReceiveSignal "Receive SIGINT"};
+    interp;
+    trap SIGINT;
+};
+
+defun start-interp () {
+    [dict-func] unset start-interp;
+    return t;
+};
