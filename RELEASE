@@ -447,4 +447,12 @@ $Id: RELEASE,v 1.68 2012/06/10 07:38:48 mit-sato Exp $
 		Support 32bit/64bit environment.
 		(Use __PTRFIFF_TYPE__ macro)
 
+2012/07/05:
+	lib/util.toy
+		List::find, List::find* bug fix.
+	parser.h
+		Fix symbol parse end condition, add "'" character.
+	lib/fib.toy
+		Bug fix.
+
 #eof

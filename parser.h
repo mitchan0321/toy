@@ -8,7 +8,7 @@
 #include "cell.h"
 #include "bulk.h"
 
-#define ENDCHAR	(" \t\r\n(){}[]#;\",")
+#define ENDCHAR	(" \t\r\n(){}[]#;\"\',")
 
 Toy_Type* toy_parse_start(Bulk *src);
 Toy_Type* toy_parse_script(Bulk *src, char endc);

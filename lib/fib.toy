@@ -4,5 +4,5 @@
 
 defun fib (n) {
     if {$n <= 1} then: {return 1};
-    [feb [$n - 1]] + [feb [$n - 2]];
+    [fib [$n - 1]] + [fib [$n - 2]];
 };
