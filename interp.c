@@ -75,7 +75,8 @@ new_interp(char* name, int stack_size, Toy_Interp* parent,
 	interp->cache_hit = 0;
 	interp->cache_missing = 0;
 #endif /* HAS_GCACHE */
-	hash_set_t(interp->scripts, const_atscriptid, new_integer(interp->script_id));
+	hash_set_t(interp->scripts, const_atscriptid,
+		   new_integer_si(interp->script_id));
 
 	interp->cstack = 0;
 	interp->cstack_size = 0;
@@ -476,7 +477,7 @@ get_script_path(Toy_Interp* interp, int script_id) {
     if (script_id <= 0) return "-";
 
     h = interp->scripts;
-    cont = hash_get(h, to_string(new_integer(script_id)));
+    cont = hash_get(h, to_string(new_integer_si(script_id)));
     if (NULL == cont) return "???";
 
     s = (Toy_Script*)cont->u.container;

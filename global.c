@@ -62,7 +62,7 @@ void def_global() {
     const_string = new_symbol("string");
     const_delegate = new_symbol("delegate:");
     const_init = new_symbol("init:");
-    const_int1 = new_integer(1);
+    const_int1 = new_integer_si(1);
     const_new = new_symbol("new");
     const_unknown = new_symbol("unknown");
     const_out = new_symbol("out:");

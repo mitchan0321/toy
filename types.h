@@ -8,6 +8,7 @@
 #include <setjmp.h>
 #include <sys/types.h>
 #include <pcl.h>
+#include <gmp.h>
 #include "cell.h"
 #include "hash.h"
 #include "array.h"
@@ -219,7 +220,7 @@ typedef struct _toy_type {
 	} list;
 
 	/* INTEGER */
-	int64_t integer;
+	mpz_t biginteger;
 
 	/* REAL */
 	double real;
@@ -343,7 +344,10 @@ Toy_Type*	list_append(Toy_Type *list, Toy_Type *item);
 Toy_Type*	list_next(Toy_Type *list);
 Toy_Type*	list_get_item(Toy_Type *list);
 int		list_length(Toy_Type *list);
-Toy_Type*	new_integer(int64_t integer);
+Toy_Type*	new_integer(mpz_t biginteger);
+Toy_Type*	new_integer_si(int integer);
+Toy_Type*	new_integer_d(double val);
+char*		integer_to_str(Toy_Type *val);
 Toy_Type*	new_real(double real);
 Toy_Type*	new_string_str(char *string);
 Toy_Type*	new_string_cell(Cell *string);

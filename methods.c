@@ -217,6 +217,7 @@ error:
 Toy_Type*
 mth_integer_plus(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *arg;
+    mpz_t s;
 
     if (arglen > 1) goto error;
     if (hash_get_length(nameargs) > 0) goto error;
@@ -225,10 +226,14 @@ mth_integer_plus(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argl
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	return new_integer(SELF(interp)->u.integer + arg->u.integer);
+	mpz_init(s);
+	mpz_set(s, SELF(interp)->u.biginteger);
+	mpz_add(s, s, arg->u.biginteger);
+	return new_integer(s);
 	
     case REAL:
-	return new_real(SELF(interp)->u.integer + arg->u.real);
+	return new_real(mpz_get_d(SELF(interp)->u.biginteger)
+			+ arg->u.real);
     }
 
 error:
@@ -242,6 +247,7 @@ error2:
 Toy_Type*
 mth_integer_minus(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *arg;
+    mpz_t s;
 
     if (arglen > 1) goto error;
     if (hash_get_length(nameargs) > 0) goto error;
@@ -250,10 +256,14 @@ mth_integer_minus(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arg
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	return new_integer(SELF(interp)->u.integer - arg->u.integer);
+	mpz_init(s);
+	mpz_set(s, SELF(interp)->u.biginteger);
+	mpz_sub(s, s, arg->u.biginteger);
+	return new_integer(s);
 	
     case REAL:
-	return new_real(SELF(interp)->u.integer - arg->u.real);
+	return new_real(mpz_get_d(SELF(interp)->u.biginteger)
+			- arg->u.real);
     }
 
 error:
@@ -266,6 +276,7 @@ error2:
 Toy_Type*
 mth_integer_mul(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *arg;
+    mpz_t s;
 
     if (arglen > 1) goto error;
     if (hash_get_length(nameargs) > 0) goto error;
@@ -274,10 +285,14 @@ mth_integer_mul(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	return new_integer(SELF(interp)->u.integer * arg->u.integer);
+	mpz_init(s);
+	mpz_set(s, SELF(interp)->u.biginteger);
+	mpz_mul(s, s, arg->u.biginteger);
+	return new_integer(s);
 	
     case REAL:
-	return new_real(SELF(interp)->u.integer * arg->u.real);
+	return new_real(mpz_get_d(SELF(interp)->u.biginteger)
+			* arg->u.real);
     }
 
 error:
@@ -290,6 +305,7 @@ error2:
 Toy_Type*
 mth_integer_div(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *arg;
+    mpz_t s;
 
     if (arglen > 1) goto error;
     if (hash_get_length(nameargs) > 0) goto error;
@@ -298,16 +314,20 @@ mth_integer_div(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	if (arg->u.integer == 0) {
+	if (0 == mpz_cmp_si(arg->u.biginteger, 0)) {
 	    return new_exception(TE_ZERODIV, "Zero divide.", interp);
 	}
-	return new_integer(SELF(interp)->u.integer / arg->u.integer);
+	mpz_init(s);
+	mpz_set(s, SELF(interp)->u.biginteger);
+	mpz_div(s, s, arg->u.biginteger);
+	return new_integer(s);
 	
     case REAL:
 	if (arg->u.real == 0.0) {
 	    return new_exception(TE_ZERODIV, "Zero divide.", interp);
 	}
-	return new_real((double)(SELF(interp)->u.integer) / arg->u.real);
+	return new_real(mpz_get_d((SELF(interp)->u.biginteger))
+			/ arg->u.real);
     }
 
 error:
@@ -320,6 +340,7 @@ error2:
 Toy_Type*
 mth_integer_mod(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *arg;
+    mpz_t s;
 
     if (arglen > 1) goto error;
     if (hash_get_length(nameargs) > 0) goto error;
@@ -328,7 +349,10 @@ mth_integer_mod(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	return new_integer(SELF(interp)->u.integer % arg->u.integer);
+	mpz_init(s);
+	mpz_set(s, SELF(interp)->u.biginteger);
+	mpz_mod(s, s, arg->u.biginteger);
+	return new_integer(s);
     }
 
 error:
@@ -350,13 +374,14 @@ mth_integer_eq(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	if (SELF(interp)->u.integer == arg->u.integer) {
+	if (0 == (mpz_cmp(SELF(interp)->u.biginteger,
+			  arg->u.biginteger))) {
 	    return SELF(interp);
 	}
 	return const_Nil;
 	
     case REAL:
-	if ((double)SELF(interp)->u.integer == arg->u.real) {
+	if (mpz_get_d(SELF(interp)->u.biginteger) == arg->u.real) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -380,13 +405,14 @@ mth_integer_neq(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	if (SELF(interp)->u.integer != arg->u.integer) {
+	if (0 != (mpz_cmp(SELF(interp)->u.biginteger,
+			  arg->u.biginteger))) {
 	    return SELF(interp);
 	}
 	return const_Nil;
 	
     case REAL:
-	if ((double)SELF(interp)->u.integer != arg->u.real) {
+	if (mpz_get_d(SELF(interp)->u.biginteger) != arg->u.real) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -410,13 +436,13 @@ mth_integer_gt(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	if (SELF(interp)->u.integer > arg->u.integer) {
+	if (mpz_cmp(SELF(interp)->u.biginteger, arg->u.biginteger) > 0) {
 	    return SELF(interp);
 	}
 	return const_Nil;
 	
     case REAL:
-	if ((double)SELF(interp)->u.integer > arg->u.real) {
+	if (mpz_get_d(SELF(interp)->u.biginteger) > arg->u.real) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -440,13 +466,13 @@ mth_integer_lt(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	if (SELF(interp)->u.integer < arg->u.integer) {
+	if (mpz_cmp(SELF(interp)->u.biginteger, arg->u.biginteger) < 0) {
 	    return SELF(interp);
 	}
 	return const_Nil;
 	
     case REAL:
-	if ((double)SELF(interp)->u.integer < arg->u.real) {
+	if (mpz_get_d(SELF(interp)->u.biginteger) < arg->u.real) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -470,13 +496,13 @@ mth_integer_ge(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	if (SELF(interp)->u.integer >= arg->u.integer) {
+	if (mpz_cmp(SELF(interp)->u.biginteger, arg->u.biginteger) >=0) {
 	    return SELF(interp);
 	}
 	return const_Nil;
 	
     case REAL:
-	if ((double)SELF(interp)->u.integer >= arg->u.real) {
+	if (mpz_get_d(SELF(interp)->u.biginteger) >= arg->u.real) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -500,13 +526,13 @@ mth_integer_le(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     arg = list_get_item(posargs);
     switch (GET_TAG(arg)) {
     case INTEGER:
-	if (SELF(interp)->u.integer <= arg->u.integer) {
+	if (mpz_cmp(SELF(interp)->u.biginteger, arg->u.biginteger) <= 0) {
 	    return SELF(interp);
 	}
 	return const_Nil;
 	
     case REAL:
-	if ((double)SELF(interp)->u.integer <= arg->u.real) {
+	if (mpz_get_d(SELF(interp)->u.biginteger) <= arg->u.real) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -530,12 +556,16 @@ mth_integer_inc(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
 
     if (arg == NULL) {
-	SELF(interp)->u.integer++;
+	mpz_add_ui(SELF(interp)->u.biginteger,
+		   SELF(interp)->u.biginteger,
+		   1);
 	return SELF(interp);
     }
 
     if (GET_TAG(arg) == INTEGER) {
-	SELF(interp)->u.integer += arg->u.integer;
+	mpz_add(SELF(interp)->u.biginteger,
+		SELF(interp)->u.biginteger,
+		arg->u.biginteger);
 	return SELF(interp);
     }
 
@@ -557,12 +587,16 @@ mth_integer_dec(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
 
     if (arg == NULL) {
-	SELF(interp)->u.integer--;
+	mpz_sub_ui(SELF(interp)->u.biginteger,
+		   SELF(interp)->u.biginteger,
+		   1);
 	return SELF(interp);
     }
 
     if (GET_TAG(arg) == INTEGER) {
-	SELF(interp)->u.integer -= arg->u.integer;
+	mpz_sub(SELF(interp)->u.biginteger,
+		SELF(interp)->u.biginteger,
+		arg->u.biginteger);
 	return SELF(interp);
     }
 
@@ -586,7 +620,7 @@ mth_integer_each(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argl
     any = hash_get_and_unset_t(nameargs, const_to);
     if (NULL == any) goto error;
     if (GET_TAG(any) != INTEGER) goto error;
-    upto = any->u.integer;
+    upto = mpz_get_si(any->u.biginteger);
 
     block = hash_get_and_unset_t(nameargs, const_do);
     if (NULL == block) goto error;
@@ -595,12 +629,12 @@ mth_integer_each(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argl
     if (hash_get_length(nameargs) > 0) goto error;
     
 loop_retry:
-    i = SELF(interp)->u.integer;
+    i = mpz_get_si(SELF(interp)->u.biginteger);
 
     if (i > upto) step = -1;
 
 loop:
-    result = toy_yield(interp, block, new_list(new_integer(i)));
+    result = toy_yield(interp, block, new_list(new_integer_si(i)));
     t = GET_TAG(result);
     if (t == EXCEPTION) return result;
     if (t == CONTROL) {
@@ -660,7 +694,7 @@ mth_integer_list(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argl
     any = list_get_item(posargs);
     if (NULL == any) goto error;
     if (GET_TAG(any) != INTEGER) goto error;
-    upto = any->u.integer;
+    upto = mpz_get_si(any->u.biginteger);
 
     block = hash_get_and_unset_t(nameargs, const_do);
     if (block && (GET_TAG(block) != CLOSURE)) goto error;
@@ -672,15 +706,15 @@ mth_integer_list(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argl
     l = lresult = new_list(NULL);
 
 loop_retry:
-    i = SELF(interp)->u.integer;
+    i = mpz_get_si(SELF(interp)->u.biginteger);
 
     if (i > upto) step = -1;
 
 loop:
     if (f) {
-	result = toy_yield(interp, block, new_list(new_integer(i)));
+	result = toy_yield(interp, block, new_list(new_integer_si(i)));
     } else {
-	result = new_integer(i);
+	result = new_integer_si(i);
     }
     t = GET_TAG(result);
     if (t == EXCEPTION) return result;
@@ -736,7 +770,7 @@ mth_integer_toreal(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int ar
     if (hash_get_length(nameargs) > 0) goto error;
     if (GET_TAG(SELF(interp)) != INTEGER) goto error2;
 
-    return new_real((double)SELF(interp)->u.integer);
+    return new_real(mpz_get_d(SELF(interp)->u.biginteger));
     
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'real', syntax: Integer real", interp);
@@ -755,7 +789,8 @@ mth_integer_rol(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     if (GET_TAG(arg) != INTEGER) goto error;
 
-    return new_integer((self->u.integer) << (arg->u.integer));
+    return new_integer_si(mpz_get_si(self->u.biginteger)
+			  << mpz_get_si(arg->u.biginteger));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at '<<', syntax: Integer << bit", interp);
@@ -774,7 +809,8 @@ mth_integer_ror(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     if (GET_TAG(arg) != INTEGER) goto error;
 
-    return new_integer((self->u.integer) >> (arg->u.integer));
+    return new_integer_si(mpz_get_si(self->u.biginteger)
+			  >> mpz_get_si(arg->u.biginteger));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at '>>', syntax: Integer >> bit", interp);
@@ -785,6 +821,7 @@ error2:
 Toy_Type*
 mth_integer_or(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *self, *arg;
+    mpz_t s;
 
     if (arglen != 1) goto error;
     if (hash_get_length(nameargs) != 0) goto error;
@@ -793,7 +830,10 @@ mth_integer_or(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     arg = list_get_item(posargs);
     if (GET_TAG(arg) != INTEGER) goto error;
 
-    return new_integer((self->u.integer) | (arg->u.integer));
+    mpz_init(s);
+    mpz_set(s, self->u.biginteger);
+    mpz_ior(s, s, arg->u.biginteger);
+    return new_integer(s);
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at '||', syntax: Integer || val", interp);
@@ -804,6 +844,7 @@ error2:
 Toy_Type*
 mth_integer_and(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *self, *arg;
+    mpz_t s;
 
     if (arglen != 1) goto error;
     if (hash_get_length(nameargs) != 0) goto error;
@@ -812,7 +853,10 @@ mth_integer_and(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     if (GET_TAG(arg) != INTEGER) goto error;
 
-    return new_integer((self->u.integer) & (arg->u.integer));
+    mpz_init(s);
+    mpz_set(s, self->u.biginteger);
+    mpz_and(s, s, arg->u.biginteger);
+    return new_integer(s);
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at '&&', syntax: Integer && val", interp);
@@ -823,6 +867,7 @@ error2:
 Toy_Type*
 mth_integer_xor(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *self, *arg;
+    mpz_t s;
 
     if (arglen != 1) goto error;
     if (hash_get_length(nameargs) != 0) goto error;
@@ -831,7 +876,10 @@ mth_integer_xor(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     arg = list_get_item(posargs);
     if (GET_TAG(arg) != INTEGER) goto error;
 
-    return new_integer((self->u.integer) ^ (arg->u.integer));
+    mpz_init(s);
+    mpz_set(s, self->u.biginteger);
+    mpz_xor(s, s, arg->u.biginteger);
+    return new_integer(s);
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at '^^', syntax: Integer ^^ val", interp);
@@ -842,13 +890,18 @@ error2:
 Toy_Type*
 mth_integer_not(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *self;
+    mpz_t s;
 
     if (arglen != 0) goto error;
     if (hash_get_length(nameargs) != 0) goto error;
     self = SELF(interp);
     if (GET_TAG(self) != INTEGER) goto error2;
 
-    return new_integer(~(self->u.integer));
+    mpz_init(s);
+    mpz_set(s, self->u.biginteger);
+    mpz_neg(s, s);
+    mpz_sub_ui(s, s, -1);
+    return new_integer(s);
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at '~~', syntax: Integer ~~ val", interp);
@@ -871,7 +924,8 @@ mth_real_plus(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen)
 	return new_real(SELF(interp)->u.real + arg->u.real);
 
     case INTEGER:
-	return new_real(SELF(interp)->u.real + arg->u.integer);
+	return new_real(SELF(interp)->u.real
+			+ mpz_get_d(arg->u.biginteger));
     }
 
 error:
@@ -896,8 +950,8 @@ mth_real_minus(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
 	return new_real(SELF(interp)->u.real - arg->u.real);
 
     case INTEGER:
-	return new_real(SELF(interp)->u.real - arg->u.integer);
-	
+	return new_real(SELF(interp)->u.real
+			- mpz_get_d(arg->u.biginteger));
     }
 
 error:
@@ -921,7 +975,8 @@ mth_real_mul(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
 	return new_real(SELF(interp)->u.real * arg->u.real);
 
     case INTEGER:
-	return new_real(SELF(interp)->u.real * arg->u.integer);
+	return new_real(SELF(interp)->u.real
+			* mpz_get_d(arg->u.biginteger));
     }
 
 error:
@@ -948,10 +1003,11 @@ mth_real_div(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
 	return new_real(SELF(interp)->u.real / arg->u.real);
 
     case INTEGER:
-	if (arg->u.integer == 0) {
+	if (0 == (mpz_cmp_si(arg->u.biginteger, 0))) {
 	    return new_exception(TE_ZERODIV, "Zero divide.", interp);
 	}
-	return new_real(SELF(interp)->u.real / arg->u.integer);
+	return new_real(SELF(interp)->u.real
+			/ mpz_get_d(arg->u.biginteger));
     }
 
 error:
@@ -978,7 +1034,7 @@ mth_real_eq(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	return const_Nil;
 
     case INTEGER:
-	if (SELF(interp)->u.real == arg->u.integer) {
+	if (SELF(interp)->u.real == mpz_get_d(arg->u.biginteger)) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -1008,7 +1064,7 @@ mth_real_neq(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
 	return const_Nil;
 
     case INTEGER:
-	if (SELF(interp)->u.real != arg->u.integer) {
+	if (SELF(interp)->u.real != mpz_get_d(arg->u.biginteger)) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -1038,7 +1094,7 @@ mth_real_gt(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	return const_Nil;
 
     case INTEGER:
-	if (SELF(interp)->u.real > arg->u.integer) {
+	if (SELF(interp)->u.real > mpz_get_d(arg->u.biginteger)) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -1068,7 +1124,7 @@ mth_real_lt(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	return const_Nil;
 
     case INTEGER:
-	if (SELF(interp)->u.real < arg->u.integer) {
+	if (SELF(interp)->u.real < mpz_get_d(arg->u.biginteger)) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -1098,7 +1154,7 @@ mth_real_ge(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	return const_Nil;
 
     case INTEGER:
-	if (SELF(interp)->u.real >= arg->u.integer) {
+	if (SELF(interp)->u.real >= mpz_get_d(arg->u.biginteger)) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -1128,7 +1184,7 @@ mth_real_le(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	return const_Nil;
 
     case INTEGER:
-	if (SELF(interp)->u.real <= arg->u.integer) {
+	if (SELF(interp)->u.real <= mpz_get_d(arg->u.biginteger)) {
 	    return SELF(interp);
 	}
 	return const_Nil;
@@ -1147,7 +1203,7 @@ mth_real_tointeger(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int ar
     if (hash_get_length(nameargs) > 0) goto error;
     if (GET_TAG(SELF(interp)) != REAL) goto error2;
 
-    return new_integer((long long int)SELF(interp)->u.real);
+    return new_integer_d(SELF(interp)->u.real);
     
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'int', syntax: Real int", interp);
@@ -1337,7 +1393,7 @@ mth_list_len(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
     if (GET_TAG(SELF(interp)) != LIST) goto error2;
 
     l = SELF(interp);
-    return new_integer(list_length(l));
+    return new_integer_si(list_length(l));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'len', syntax: List len", interp);
@@ -1461,7 +1517,7 @@ mth_list_get(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
 
     index = list_get_item(posargs);
     if (GET_TAG(index) != INTEGER) goto error;
-    pos = index->u.integer;
+    pos = mpz_get_si(index->u.biginteger);
     if (pos < 0) goto error;
 
     src = SELF(interp);
@@ -1608,7 +1664,7 @@ mth_list_seek(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen)
 
     t = list_get_item(posargs);
     if (GET_TAG(t) != INTEGER) goto error;
-    index = t->u.integer;
+    index = mpz_get_si(t->u.biginteger);
 
     i = 0;
     while ((! IS_LIST_NULL(self)) && (i < index)) {
@@ -1639,7 +1695,7 @@ mth_list_split(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
 
     t = list_get_item(posargs);
     if (GET_TAG(t) != INTEGER) goto error;
-    index = t->u.integer;
+    index = mpz_get_si(t->u.biginteger);
 
     lleft = left = new_list(NULL);
     lright = right = new_list(NULL);
@@ -1869,7 +1925,7 @@ mth_string_len(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     if (GET_TAG(SELF(interp)) != STRING) goto error2;
 
     s = SELF(interp);
-    return new_integer(cell_get_length(s->u.string));
+    return new_integer_si(cell_get_length(s->u.string));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'len', syntax: String len", interp);
@@ -2194,8 +2250,8 @@ next_search:
 
 	    ll = l = new_list(NULL);
 	    s = new_cell("");
-	    l = list_append(l, new_integer(region->beg[i] + offs));
-	    l = list_append(l, new_integer(region->end[i] + offs));
+	    l = list_append(l, new_integer_si(region->beg[i] + offs));
+	    l = list_append(l, new_integer_si(region->end[i] + offs));
 	    l = list_append(l, new_string_cell(cell_sub(self->u.string,
 							region->beg[i] + offs,
 							region->end[i] + offs)));
@@ -2247,13 +2303,13 @@ mth_string_sub(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
 
     t = list_get_item(posargs);
     if (GET_TAG(t) != INTEGER) goto error;
-    start = t->u.integer;
+    start = mpz_get_si(t->u.biginteger);
 
     if (arglen == 2) {
 	posargs = list_next(posargs);
 	t = list_get_item(posargs);
 	if (GET_TAG(t) != INTEGER) goto error;
-	end = t->u.integer;
+	end = mpz_get_si(t->u.biginteger);
     }
 
     self = SELF(interp);
@@ -2405,7 +2461,7 @@ mth_string_toreal(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arg
 
     result = toy_symbol_conv(new_symbol(cell_get_addr(SELF(interp)->u.string)));
     if (GET_TAG(result) == INTEGER) {
-	return new_real((double)result->u.integer);
+	return new_real(mpz_get_d(result->u.biginteger));
     }
     if (GET_TAG(result) != REAL) return const_Nil;
     return result;
@@ -2495,10 +2551,13 @@ mth_string_format_C(Toy_Type *item, Cell *fmt) {
 
     switch (GET_TAG(item)) {
     case INTEGER:
-	snprintf(buff, 64, cell_get_addr(fmt), item->u.integer);
+	/* XXX: fix it for bit integer */
+	snprintf(buff, 64, cell_get_addr(fmt),
+		 mpz_get_si(item->u.biginteger));
 	break;
     case REAL:
-	snprintf(buff, 64, cell_get_addr(fmt), item->u.real);
+	snprintf(buff, 64, cell_get_addr(fmt),
+		 item->u.real);
 	break;
     default:
 	return 0;
@@ -2827,7 +2886,7 @@ mth_hash_len(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
     if (NULL == container) goto error2;
     hash = container->u.container;
 
-    return new_integer(hash_get_length(hash));
+    return new_integer_si(hash_get_length(hash));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'len', syntax: Hash len", interp);
@@ -3144,7 +3203,8 @@ mth_file_stat(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen)
 
     l = new_list(NULL);
 
-    list_append(l, new_cons(new_symbol("fd"), f->fd?new_integer(fileno(f->fd)):const_Nil));
+    list_append(l, new_cons(new_symbol("fd"),
+			    f->fd?new_integer_si(fileno(f->fd)):const_Nil));
     switch (f->mode) {
     case FMODE_INPUT:
 	mode = new_symbol("i");
@@ -3252,7 +3312,7 @@ mth_file_set(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
 	f->mode = FMODE_INOUT;
     } else goto error;
 	
-    f->fd = fdopen((int)tfd->u.integer, imode);
+    f->fd = fdopen(mpz_get_si(tfd->u.biginteger), imode);
     f->path = const_Nil;
 
     if (NULL == f->fd) {
@@ -3399,7 +3459,7 @@ mth_array_set(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen)
     if (NULL == container) goto error2;
     array = container->u.container;
 
-    if (! array_set(array, val, pos->u.integer)) {
+    if (! array_set(array, val, mpz_get_si(pos->u.biginteger))) {
 	return new_exception(TE_ARRAYBOUNDARY, "Array boudary error.", interp);
     }
 
@@ -3429,7 +3489,7 @@ mth_array_get(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen)
     if (NULL == container) goto error2;
     array = container->u.container;
 
-    val = array_get(array, pos->u.integer);
+    val = array_get(array, mpz_get_si(pos->u.biginteger));
     
     if (! val) {
 	return new_exception(TE_ARRAYBOUNDARY, "Array boudary error.", interp);
@@ -3457,7 +3517,7 @@ mth_array_len(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen)
     if (NULL == container) goto error2;
     array = container->u.container;
 
-    return new_integer(array_get_size(array));
+    return new_integer_si(array_get_size(array));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'len', syntax: Array len", interp);
@@ -3473,7 +3533,7 @@ mth_array_each(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     Toy_Type *block;
     Toy_Type *result;
     int t;
-    Toy_Type *pos;
+    int pos;
 
     if (arglen > 0) goto error;
     if (hash_get_length(nameargs) > 1) goto error;
@@ -3488,14 +3548,13 @@ mth_array_each(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
 
     if ((block == NULL) || (GET_TAG(block) != CLOSURE)) goto error;
 
-    pos = new_integer(0);
 loop_retry:
-    pos->u.integer = 0;
+    pos = 0;
     result = const_Nil;
 
 loop:
-    if (pos->u.integer >= array_get_size(array)) goto fin;
-    result = toy_yield(interp, block, new_list(array_get(array, pos->u.integer)));
+    if (pos >= array_get_size(array)) goto fin;
+    result = toy_yield(interp, block, new_list(array_get(array, pos)));
     t = GET_TAG(result);
     if (t == EXCEPTION) return result;
     if (t == CONTROL) {
@@ -3519,7 +3578,7 @@ loop:
     }
 
 loop_continue:
-    pos->u.integer ++;
+    pos++;
     goto loop;
 
 fin:
@@ -3702,7 +3761,7 @@ mth_dict_len(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) 
     o = SELF(interp);
     if (GET_TAG(o) != DICT) goto error2;
 
-    return new_integer(hash_get_length(o->u.dict));
+    return new_integer_si(hash_get_length(o->u.dict));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'len', syntax: Dict len", interp);
@@ -3811,7 +3870,7 @@ mth_vector_set(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     o = SELF(interp);
     if (GET_TAG(o) != VECTOR) goto error2;
 
-    if (! array_set(o->u.vector, item, index->u.integer)) {
+    if (! array_set(o->u.vector, item, mpz_get_si(index->u.biginteger))) {
 	return new_exception(TE_ARRAYBOUNDARY, "Array boudary error.", interp);
     }
 
@@ -3838,7 +3897,7 @@ mth_vector_get(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     o = SELF(interp);
     if (GET_TAG(o) != VECTOR) goto error2;
 
-    item = array_get(o->u.vector, index->u.integer);
+    item = array_get(o->u.vector, mpz_get_si(index->u.biginteger));
     if (! item) {
 	return new_exception(TE_ARRAYBOUNDARY, "Array boudary error.", interp);
     }
@@ -3862,7 +3921,7 @@ mth_vector_len(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen
     o = SELF(interp);
     if (GET_TAG(o) != VECTOR) goto error2;
 
-    return new_integer(array_get_size(o->u.vector));
+    return new_integer_si(array_get_size(o->u.vector));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at 'len', syntax: Vector len", interp);
@@ -3926,7 +3985,7 @@ mth_vector_each(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     Toy_Type *result;
     Toy_Type *o;
     Toy_Type *block;
-    Toy_Type *pos;
+    int pos;
 
     if (arglen != 0) goto error;
 
@@ -3937,14 +3996,14 @@ mth_vector_each(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int argle
     if (hash_get_length(nameargs) > 0) goto error;
     if ((block == NULL) || (GET_TAG(block) != CLOSURE)) goto error;
 
-    pos = new_integer(0);
 loop_retry:
-    pos->u.integer = 0;
+    pos = 0;
     result = const_Nil;
 
 loop:
-    if (pos->u.integer >= array_get_size(o->u.vector)) goto fin;
-    result = toy_yield(interp, block, new_list(array_get(o->u.vector, pos->u.integer)));
+    if (pos >= array_get_size(o->u.vector)) goto fin;
+    result = toy_yield(interp, block,
+		       new_list(array_get(o->u.vector, pos)));
     t = GET_TAG(result);
     if (t == EXCEPTION) return result;
     if (t == CONTROL) {
@@ -3968,7 +4027,7 @@ loop:
     }
 
 loop_continue:
-    pos->u.integer ++;
+    pos++;
     goto loop;
 
 fin:

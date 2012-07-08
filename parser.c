@@ -568,8 +568,9 @@ toy_symbol_conv(Toy_Type *a) {
 	if (! isdigit(*p)) goto non_integer;
 	p++;
     }
+    /* XXX: fix it, for big integer */
     sscanf(cell_get_addr(a->u.symbol.cell), "%lld", &i);
-    return new_integer(i);
+    return new_integer_si(i);
 
 non_integer:
 
@@ -618,8 +619,9 @@ non_real:
 	    if (! ishexnumber(*p)) goto non_hex;
 	    p++;
 	}
+	/* XXX: fix it, for big integer */
 	sscanf(cell_get_addr(a->u.symbol.cell), "%llx", &i);
-	return new_integer(i);
+	return new_integer_si(i);
     }
 
 non_hex:

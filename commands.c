@@ -617,13 +617,13 @@ cmd_showstack(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen)
 
     l = new_list(NULL);
 
-    p = new_cons(new_symbol("stack_size"), new_integer(interp->stack_size));
+    p = new_cons(new_symbol("stack_size"), new_integer_si(interp->stack_size));
     list_append(l, p);
 
-    p = new_cons(new_symbol("cur_obj_stack"), new_integer(interp->cur_obj_stack));
+    p = new_cons(new_symbol("cur_obj_stack"), new_integer_si(interp->cur_obj_stack));
     list_append(l, p);
 
-    p = new_cons(new_symbol("cur_func_stack"), new_integer(interp->cur_func_stack));
+    p = new_cons(new_symbol("cur_func_stack"), new_integer_si(interp->cur_func_stack));
     list_append(l, p);
 
     return l;
@@ -1328,7 +1328,7 @@ cmd_load(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *script, *result;
     Hash *shash;
     Toy_Type *tid, *nid;
-    long long int id;
+    int id;
     Toy_Script *sscript;
 
     if (hash_get_length(nameargs) > 0) goto error;
@@ -1352,9 +1352,9 @@ cmd_load(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 
     shash = interp->scripts;
     tid = hash_get_t(shash, const_atscriptid);
-    id = (int)tid->u.integer;
+    id = mpz_get_si(tid->u.biginteger);
     id++;
-    nid = new_integer(id);
+    nid = new_integer_si(id);
     SET_SCRIPT_ID(script, id);
 
     sscript = GC_MALLOC(sizeof(struct _toy_script));
@@ -1391,7 +1391,7 @@ cmd_sid(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 
     name = list_get_item(posargs);
     if (GET_TAG(name) == FUNC) {
-	return new_integer(GET_SCRIPT_ID(name->u.func.closure->u.closure.block_body));
+	return new_integer_si(GET_SCRIPT_ID(name->u.func.closure->u.closure.block_body));
     }
 
     if (GET_TAG(name) != SYMBOL) goto error;
@@ -1403,7 +1403,7 @@ cmd_sid(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     if (GET_TAG(func) != FUNC) {
 	return const_Nil;
     }
-    return new_integer(GET_SCRIPT_ID(func->u.func.closure->u.closure.block_body));
+    return new_integer_si(GET_SCRIPT_ID(func->u.func.closure->u.closure.block_body));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error, syntax: sid func", interp);
@@ -1427,13 +1427,13 @@ cmd_sdir(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     if (NULL == id) return const_Nil;
 
     resultl = result = new_list(NULL);
-    for (i=1; i<=id->u.integer; i++) {
-	cont = hash_get(h, to_string(new_integer(i)));
+    for (i=1; i<=mpz_get_si(id->u.biginteger); i++) {
+	cont = hash_get(h, to_string(new_integer_si(i)));
 	if (NULL == cont) return const_Nil;
 
 	script = (Toy_Script*)(cont->u.container);
 	iteml = item = new_list(NULL);
-	iteml = list_append(iteml, new_integer(script->id));
+	iteml = list_append(iteml, new_integer_si(script->id));
 	iteml = list_append(iteml, script->path);
 
 	resultl = list_append(resultl, item);
@@ -1527,7 +1527,7 @@ cmd_alias(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	iup = 0;
     } else {
 	if (GET_TAG(up) != INTEGER) goto error;
-	iup = up->u.integer;
+	iup = mpz_get_si(up->u.biginteger);
 	if (iup < 0) goto error;
     }
 
@@ -1552,7 +1552,7 @@ error:
 Toy_Type*
 cmd_sleep(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *msec;
-    long long int imsec;
+    int imsec;
 
     if (arglen != 1) goto error;
     if (hash_get_length(nameargs) > 0) goto error;
@@ -1560,7 +1560,7 @@ cmd_sleep(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     msec = list_get_item(posargs);
     if (GET_TAG(msec) != INTEGER) goto error;
 
-    imsec = msec->u.integer;
+    imsec = mpz_get_si(msec->u.biginteger);
 
     usleep((useconds_t)(imsec * 1000));
 
@@ -1864,10 +1864,10 @@ cmd_trace(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     if (hash_get_length(nameargs) > 0) goto error;
     if (NULL != fd) {
 	if (GET_TAG(fd) != INTEGER) goto error;
-	interp->trace_fd = fd->u.integer;
+	interp->trace_fd = mpz_get_si(fd->u.biginteger);
     }
 
-    if (arglen == 0) return new_integer(interp->trace);
+    if (arglen == 0) return new_integer_si(interp->trace);
 
     level = list_get_item(posargs);
     if (GET_TAG(level) != INTEGER) {
@@ -1883,10 +1883,10 @@ cmd_trace(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	}
     }
 
-    ilevel = level->u.integer;
+    ilevel = mpz_get_si(level->u.biginteger);
     interp->trace = ilevel;
 
-    return new_integer(ilevel);
+    return new_integer_si(ilevel);
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error, syntax: trace level | {block} [out: fd]", interp);
@@ -1902,7 +1902,7 @@ cmd_exit(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     if (arglen == 1) {
 	code = list_get_item(posargs);
 	if (GET_TAG(code) != INTEGER) goto error;
-	exit(code->u.integer);
+	exit(mpz_get_si(code->u.biginteger));
     }
     exit(0);
 
@@ -1922,7 +1922,7 @@ cmd_fork(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	return new_exception(TE_SYSCALL, strerror(errno), interp);
     }
 
-    return new_integer(pid);
+    return new_integer_si(pid);
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error, syntax: fork", interp);
@@ -2089,9 +2089,9 @@ Toy_Type*
 cmd_cacheinfo(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *l;
     l = new_list(NULL);
-    list_append(l, new_integer(hash_get_length(interp->gcache)));
-    list_append(l, new_integer(interp->cache_hit));
-    list_append(l, new_integer(interp->cache_missing));
+    list_append(l, new_integer_si(hash_get_length(interp->gcache)));
+    list_append(l, new_integer_si(interp->cache_hit));
+    list_append(l, new_integer_si(interp->cache_missing));
 
     return l;
 }
@@ -2173,7 +2173,7 @@ cmd_exec(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	wait(&wsts);
     }
 
-    return new_integer(WEXITSTATUS(wsts));
+    return new_integer_si(WEXITSTATUS(wsts));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error, syntax: exec command [arg ...]", interp);
@@ -2368,7 +2368,8 @@ cmd_equal(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 
     case INTEGER:
 	if (tb != INTEGER) return const_Nil;
-	if (a->u.integer == b->u.integer) return const_T;
+	if (0 == (mpz_cmp(a->u.biginteger,
+			  b->u.biginteger))) return const_T;
 	return const_Nil;
 	break;
 
@@ -2487,12 +2488,12 @@ cmd_connect(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 
     thostaddr = list_get_item(posargs);
     if (GET_TAG(thostaddr) != INTEGER) goto error;
-    hostaddr = thostaddr->u.integer;
+    hostaddr = mpz_get_si(thostaddr->u.biginteger);
 
     posargs = list_next(posargs);
     tport = list_get_item(posargs);
     if (GET_TAG(tport) != INTEGER) goto error;
-    port = tport->u.integer;
+    port = mpz_get_si(tport->u.biginteger);
 
     socket_fd = socket(PF_INET, SOCK_STREAM, 0);
     
@@ -2509,7 +2510,7 @@ cmd_connect(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
 	return new_exception(TE_SYSCALL, strerror(errno), interp);
     }
 
-    return new_integer(socket_fd);
+    return new_integer_si(socket_fd);
 
 error:
     return new_exception(TE_SYNTAX,

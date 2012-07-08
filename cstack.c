@@ -192,7 +192,7 @@ cstack_list() {
     Toy_Type *result, *slist, *elist;
 
     result = new_list(NULL);
-    list_append(result, new_integer(CStack.number_of_slot));
+    list_append(result, new_integer_si(CStack.number_of_slot));
 
     slist = new_list(NULL);
     for (i = 0 ; i < CStack.number_of_slot ; i++) {
@@ -200,39 +200,49 @@ cstack_list() {
 	switch (CStack.stack_slot[i].state) {
 	case SS_FREE:
 	    list_append(elist, new_symbol("FREE"));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].start_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].barrier_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].safe_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].end_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].jmp_buff_enable));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].start_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].barrier_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].safe_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].end_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].jmp_buff_enable));
 	    break;
 	case SS_USE:
 	    list_append(elist, new_symbol("USE"));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].start_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].barrier_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].safe_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].end_addr));
-	    list_append(elist, new_integer((__PTRDIFF_TYPE__)
-					   (__PTRDIFF_TYPE__)
-					   CStack.stack_slot[i].jmp_buff_enable));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].start_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].barrier_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].safe_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].end_addr));
+	    list_append(elist,
+			new_integer_si((__PTRDIFF_TYPE__)
+				       (__PTRDIFF_TYPE__)
+				       CStack.stack_slot[i].jmp_buff_enable));
 	    break;
 	}
 	list_append(slist, elist);

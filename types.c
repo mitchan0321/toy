@@ -60,14 +60,45 @@ new_ref(char *ref) {
 }
 
 Toy_Type*
-new_integer(int64_t integer) {
+new_integer(mpz_t integer) {
     Toy_Type *o;
     o = GC_MALLOC_ATOMIC(sizeof(Toy_Type));
     ALLOC_SAFE(o);
 
     o->tag = INTEGER;
-    o->u.integer = integer;
+    mpz_init(o->u.biginteger);
+    mpz_set(o->u.biginteger, integer);
     return o;
+}
+
+Toy_Type*
+new_integer_si(int integer) {
+    mpz_t s;
+    mpz_init(s);
+    mpz_set_si(s, integer);
+    return new_integer(s);
+}
+
+Toy_Type*
+new_integer_d(double val) {
+    mpz_t s;
+    mpz_init(s);
+    mpz_set_d(s, val);
+    return new_integer(s);
+}
+
+char*
+integer_to_str(Toy_Type *val) {
+    char *buff;
+    int size;
+
+    if (GET_TAG(val) != INTEGER) return NULL;
+    size = mpz_sizeinbase(val->u.biginteger, 10);
+    buff = GC_MALLOC(size + 1);
+    mpz_get_str(buff, 10, val->u.biginteger);
+    buff[size] = 0;
+
+    return buff;
 }
 
 Toy_Type*
@@ -451,7 +482,13 @@ toy_clone(Toy_Type *obj) {
 
     dest = GC_MALLOC(sizeof(Toy_Type));
     ALLOC_SAFE(dest);
-    memcpy((void*)dest, (const void*)obj, sizeof(Toy_Type));
+    if (INTEGER == GET_TAG(obj)) {
+	dest->tag = obj->tag;
+	mpz_init(dest->u.biginteger);
+	mpz_set(dest->u.biginteger, obj->u.biginteger);
+    } else {
+	memcpy((void*)dest, (const void*)obj, sizeof(Toy_Type));
+    }
     return dest;
 }
 
@@ -517,13 +554,7 @@ to_string(Toy_Type *obj) {
 
     case INTEGER:
     {
-	char *buff;
-	Cell *c;
-	buff = GC_MALLOC(32);
-	ALLOC_SAFE(buff);
-	snprintf(buff, 31, "%lld", obj->u.integer);
-	c = new_cell(buff);
-	return cell_get_addr(c);
+	return integer_to_str(obj);
     }
 
     case REAL:
@@ -533,8 +564,6 @@ to_string(Toy_Type *obj) {
 
 	buff = GC_MALLOC(32);
 	ALLOC_SAFE(buff);
-
-
 
 	if ((obj->u.real > 1.0E+9) || (obj->u.real < 1.0E-2)) {
 	    snprintf(buff, 31, "%.15E", obj->u.real);
@@ -817,13 +846,7 @@ to_print(Toy_Type *obj) {
 
     case INTEGER:
     {
-	char *buff;
-	Cell *c;
-	buff = GC_MALLOC(32);
-	ALLOC_SAFE(buff);
-	snprintf(buff, 31, "%lld", obj->u.integer);
-	c = new_cell(buff);
-	return cell_get_addr(c);
+	return integer_to_str(obj);
     }
 
     case REAL:
