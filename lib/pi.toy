@@ -8,14 +8,16 @@ defun pi () {
     set b1 4;
 
     loop {
-	set p [$k * $k];
-	set q [[2 * $k] + 1];
-	set k [$k + 1];
+	set l ([$k * $k] [[2 * $k] + 1] [$k + 1]);
+	set p $l,0;
+	set q $l,1;
+	set k $l,2;
 
-	set a $a1;
-	set b $b1;
-	set a1 [[$p * $a] + [$q * $a1]];
-	set b1 [[$p * $b] + [$q * $b1]];
+	set l ($a1 $b1 [[$p * $a] + [$q * $a1]] [[$p * $b] + [$q * $b1]]);
+	set a $l,0;
+	set b $l,1;
+	set a1 $l,2;
+	set b1 $l,3;
 
 	set d [$a / $b];
 	set d1 [$a1 / $b1];
@@ -23,8 +25,11 @@ defun pi () {
 	while {$d = $d1} do: {
 	    print file: $stdout $d;
 	    $stdout flush;
-	    set a [10 * [$a % $b]];
-	    set a1 [10 * [$a1 % $b1]];
+
+	    set l ([10 * [$a % $b]] [10 * [$a1 % $b1]]);
+	    set a $l,0;
+	    set a1 $l,1;
+
 	    set d [$a / $b];
 	    set d1 [$a1 / $b1];
 	};
