@@ -536,7 +536,7 @@ assert:
 Toy_Type*
 toy_symbol_conv(Toy_Type *a) {
     char *addr, *p;
-    long long int i;
+    mpz_t s;
 
     if (NULL == a) return new_nil();
     if (GET_TAG(a) != SYMBOL) return a;
@@ -568,9 +568,10 @@ toy_symbol_conv(Toy_Type *a) {
 	if (! isdigit(*p)) goto non_integer;
 	p++;
     }
-    /* XXX: fix it, for big integer */
-    sscanf(cell_get_addr(a->u.symbol.cell), "%lld", &i);
-    return new_integer_si(i);
+
+    mpz_init(s);
+    mpz_set_str(s, cell_get_addr(a->u.symbol.cell), 10);
+    return new_integer(s);
 
 non_integer:
 
@@ -619,9 +620,10 @@ non_real:
 	    if (! ishexnumber(*p)) goto non_hex;
 	    p++;
 	}
-	/* XXX: fix it, for big integer */
-	sscanf(cell_get_addr(a->u.symbol.cell), "%llx", &i);
-	return new_integer_si(i);
+
+	mpz_init(s);
+	mpz_set_str(s, &(cell_get_addr(a->u.symbol.cell)[2]), 16);
+	return new_integer(s);
     }
 
 non_hex:
