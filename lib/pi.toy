@@ -1,0 +1,32 @@
+# pi calcurate
+
+defun pi () {
+    set k 2;
+    set a 4;
+    set b 1;
+    set a1 12;
+    set b1 4;
+
+    loop {
+	set p [$k * $k];
+	set q [[2 * $k] + 1];
+	set k [$k + 1];
+
+	set a $a1;
+	set b $b1;
+	set a1 [[$p * $a] + [$q * $a1]];
+	set b1 [[$p * $b] + [$q * $b1]];
+
+	set d [$a / $b];
+	set d1 [$a1 / $b1];
+
+	while {$d = $d1} do: {
+	    print file: $stdout $d;
+	    $stdout flush;
+	    set a [10 * [$a % $b]];
+	    set a1 [10 * [$a1 % $b1]];
+	    set d [$a / $b];
+	    set d1 [$a1 / $b1];
+	};
+    };
+};
