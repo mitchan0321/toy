@@ -94,6 +94,9 @@ integer_to_str(Toy_Type *val) {
 
     if (GET_TAG(val) != INTEGER) return NULL;
     size = mpz_sizeinbase(val->u.biginteger, 10);
+    if (mpz_cmp_si(val->u.biginteger, 0) < 0) {
+	size ++;
+    }
     buff = GC_MALLOC(size + 1);
     mpz_get_str(buff, 10, val->u.biginteger);
     buff[size] = 0;

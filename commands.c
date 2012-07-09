@@ -1593,8 +1593,7 @@ cmd_sleep(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     imsec = mpz_get_si(msec->u.biginteger);
 
     usleep((useconds_t)(imsec * 1000));
-
-    return const_T;
+    return new_integer_si(imsec);
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error, syntax: sleep [msec]", interp);

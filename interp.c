@@ -16,6 +16,24 @@
 Toy_Type* cmd_pwd(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen);
 static Toy_Type* parse_env(char* buff, char sep);
 
+#ifndef PROF
+void*
+realloc_wrapper(void* ptr, size_t old, size_t new) {
+    void *p;
+
+    p = GC_malloc(new);
+    if (NULL == p) return p;
+
+    memcpy(p, ptr, (old<new)?old:new);
+    return p;
+}
+
+void
+free_wrapper(void* ptr, size_t old) {
+    return;
+}
+#endif /* PROF */
+
 Toy_Interp*
 new_interp(char* name, int stack_size, Toy_Interp* parent,
 	   int argc, char **argv, char **envp) {
@@ -24,6 +42,11 @@ new_interp(char* name, int stack_size, Toy_Interp* parent,
     static int gc_init_once = 0;
 
     if (0 == gc_init_once) {
+#ifndef PROF
+//	mp_set_memory_functions(GC_malloc,
+//				realloc_wrapper,
+//				free_wrapper);
+#endif /* PROF */
 	GC_INIT();
 	init_cstack();
 	gc_init_once = 1;
