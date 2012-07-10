@@ -455,4 +455,8 @@ $Id: RELEASE,v 1.68 2012/06/10 07:38:48 mit-sato Exp $
 	lib/fib.toy
 		Bug fix.
 
+2012/07/10:
+	commands.c
+		Add multiple variable set feature to 'set' command.
+
 #eof

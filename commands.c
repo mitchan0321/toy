@@ -50,20 +50,49 @@ cmd_set(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *var, *val;
     Hash *h;
     int len;
-    Toy_Type *res;
+    Toy_Type *res, *var2, *val2, *newargs, *res2;
 
     if (hash_get_length(nameargs) > 0) goto error;
-    h = interp->func_stack[interp->cur_func_stack]->localvar;
     len = arglen;
 
     if (((len > 2) || (len < 1)) ||
 	(hash_get_length(nameargs) > 0)) goto error;
 
     var = list_get_item(posargs);
-    if (GET_TAG(var) != SYMBOL) goto error;
+    if (GET_TAG(var) != SYMBOL) {
+	
+	if (len != 2) goto error;
+
+	/* multiple variable set */
+
+	posargs = list_next(posargs);
+	val = list_get_item(posargs);
+
+	if (GET_TAG(val) == LIST) {
+	    res2 = new_list(NULL);
+
+	    while (var && val) {
+		var2 = list_get_item(var);
+		val2 = list_get_item(val);
+		newargs = new_list(var2);
+		list_append(newargs, val2);
+
+		list_append(res2, cmd_set(interp, newargs,
+					  nameargs, 2));
+
+		var = list_next(var);
+		val = list_next(val);
+	    }
+
+	    return res2;
+	}
+
+	goto error;
+    }
+
+    h = interp->func_stack[interp->cur_func_stack]->localvar;
 
     if (len == 1) {
-
 	res = hash_get_t(h, var);
 	if (NULL == res) {
 	    Cell *msg;
@@ -94,7 +123,8 @@ cmd_set(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     }
 
 error:
-    return new_exception(TE_SYNTAX, "Syntax error, syntax: set var [val]", interp);
+    return new_exception(TE_SYNTAX, "Syntax error, syntax: \n\tset var [val]\n\
+\tor\n\tset (var1 var2 ...) (val1 val2 ...)\n", interp);
 }
 
 Toy_Type*
