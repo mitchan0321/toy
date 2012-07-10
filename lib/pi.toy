@@ -1,37 +1,22 @@
-# pi calcurate
+# pi calculate
 
 defun pi () {
-    set k 2;
-    set a 4;
-    set b 1;
-    set a1 12;
-    set b1 4;
+    set (k a b a1 b1) (2 4 1 12 4);
 
     loop {
-	set l ([$k * $k] [[2 * $k] + 1] [$k + 1]);
-	set p $l,0;
-	set q $l,1;
-	set k $l,2;
+	set (p q k)
+	    ([$k * $k] [[2 * $k] + 1] [$k + 1]);
+	set (a b a1 b1)
+	    ($a1 $b1 [[$p * $a] + [$q * $a1]] [[$p * $b] + [$q * $b1]]);
 
-	set l ($a1 $b1 [[$p * $a] + [$q * $a1]] [[$p * $b] + [$q * $b1]]);
-	set a $l,0;
-	set b $l,1;
-	set a1 $l,2;
-	set b1 $l,3;
-
-	set d [$a / $b];
-	set d1 [$a1 / $b1];
+	set (d d1) ([$a / $b] [$a1 / $b1]);
 
 	while {$d = $d1} do: {
 	    print file: $stdout $d;
 	    $stdout flush;
 
-	    set l ([10 * [$a % $b]] [10 * [$a1 % $b1]]);
-	    set a $l,0;
-	    set a1 $l,1;
-
-	    set d [$a / $b];
-	    set d1 [$a1 / $b1];
+	    set (a a1) ([10 * [$a % $b]] [10 * [$a1 % $b1]]);
+	    set (d d1) ([$a / $b] [$a1 / $b1]);
 	};
     };
 };
