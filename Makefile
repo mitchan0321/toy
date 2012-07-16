@@ -12,12 +12,12 @@ LIB		= -L/usr/local/lib -lgc -lpthread -lonig -lpcl -lgmp
 # for memory debuging build.
 #CFLAGS		= -c -g -DPROF -DHAS_GCACHE
 #INCLUDE		= -I/usr/local/include -I.
-#LIB		= -L/usr/local/lib -lonig -lpcl
+#LIB		= -L/usr/local/lib -lonig -lpcl -lgmp
 
 # for profiling build.
 #CFLAGS		= -c -g -pg -DPROF -DHAS_GCACHE
 #INCLUDE		= -I/usr/local/include -I.
-#LIB		= -pg -L/usr/local/lib -lonig -lpcl
+#LIB		= -pg -L/usr/local/lib -lonig -lpcl -lgmp
 
 HDRS		= bulk.h cell.h array.h error.h hash.h interp.h parser.h \
 		  toy.h types.h config.h global.h cstack.h

@@ -18,13 +18,24 @@ static Toy_Type* parse_env(char* buff, char sep);
 
 #ifndef PROF
 void*
+malloc_wrapper(size_t new) {
+    void *p;
+
+    p = GC_malloc(new);
+    ALLOC_SAFE(p);
+
+    return p;
+}
+
+void*
 realloc_wrapper(void* ptr, size_t old, size_t new) {
     void *p;
 
     p = GC_malloc(new);
-    if (NULL == p) return p;
-
+    ALLOC_SAFE(p);
     memcpy(p, ptr, (old<new)?old:new);
+    GC_free(ptr);
+
     return p;
 }
 
@@ -43,9 +54,9 @@ new_interp(char* name, int stack_size, Toy_Interp* parent,
 
     if (0 == gc_init_once) {
 #ifndef PROF
-//	mp_set_memory_functions(GC_malloc,
-//				realloc_wrapper,
-//				free_wrapper);
+	mp_set_memory_functions(malloc_wrapper,
+				realloc_wrapper,
+				free_wrapper);
 #endif /* PROF */
 	GC_INIT();
 	init_cstack();

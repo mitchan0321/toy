@@ -59,21 +59,42 @@ new_ref(char *ref) {
     return o;
 }
 
+void
+integer_finalizer(void *obj, void *client_data) {
+    Toy_Type *p;
+
+    p = (Toy_Type*)obj;
+    mpz_clear(p->u.biginteger);
+
+    return;
+}
+
 Toy_Type*
 new_integer(mpz_t integer) {
     Toy_Type *o;
-    o = GC_MALLOC_ATOMIC(sizeof(Toy_Type));
+//    void *ocd;
+//    GC_finalization_proc ofun;
+
+    o = GC_MALLOC(sizeof(Toy_Type));
     ALLOC_SAFE(o);
 
     o->tag = INTEGER;
     mpz_init(o->u.biginteger);
     mpz_set(o->u.biginteger, integer);
+
+//    GC_register_finalizer((void*)o,
+//			  integer_finalizer,
+//			  (void*)o,
+//			  &ofun,
+//			  &ocd);
+
     return o;
 }
 
 Toy_Type*
 new_integer_si(int integer) {
     mpz_t s;
+
     mpz_init(s);
     mpz_set_si(s, integer);
     return new_integer(s);
@@ -82,6 +103,7 @@ new_integer_si(int integer) {
 Toy_Type*
 new_integer_d(double val) {
     mpz_t s;
+
     mpz_init(s);
     mpz_set_d(s, val);
     return new_integer(s);
@@ -441,10 +463,22 @@ coroutine_handl(void *context) {
     co_exit();
 }
 
+void
+coro_finalizer(void *obj, void *client_data) {
+    Toy_Type *p;
+
+    p = (Toy_Type*)obj;
+    cstack_release(p->u.coroutine->interp->cstack_id);
+
+    return;
+}
+
 Toy_Type*
 new_coroutine(Toy_Interp *interp, Toy_Type* script) {
     Toy_Type *o;
     int cstack_id;
+    void *ocd;
+    GC_finalization_proc ofun;
 
     o = GC_MALLOC(sizeof(Toy_Type));
     ALLOC_SAFE(o);
@@ -471,6 +505,12 @@ new_coroutine(Toy_Interp *interp, Toy_Type* script) {
 					o->u.coroutine->interp->cstack_size);
     o->u.coroutine->interp->coroid = o->u.coroutine->coro_id;
     o->u.coroutine->state = CO_STS_INIT;
+
+    GC_register_finalizer((void*)o,
+			  coro_finalizer,
+			  (void*)o,
+			  &ofun,
+			  &ocd);
 
     if (NULL == o->u.coroutine->coro_id) {
 	return NULL;

@@ -533,7 +533,7 @@ assert:
     return NULL;
 }
 
-Toy_Type*
+Toy_Type* 
 toy_symbol_conv(Toy_Type *a) {
     char *addr, *p;
     mpz_t s;

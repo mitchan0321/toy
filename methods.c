@@ -890,18 +890,13 @@ error2:
 Toy_Type*
 mth_integer_not(Toy_Interp *interp, Toy_Type *posargs, Hash *nameargs, int arglen) {
     Toy_Type *self;
-    mpz_t s;
 
     if (arglen != 0) goto error;
     if (hash_get_length(nameargs) != 0) goto error;
     self = SELF(interp);
     if (GET_TAG(self) != INTEGER) goto error2;
 
-    mpz_init(s);
-    mpz_set(s, self->u.biginteger);
-    mpz_neg(s, s);
-    mpz_sub_ui(s, s, -1);
-    return new_integer(s);
+    return new_integer_si(~mpz_get_si(self->u.biginteger));
 
 error:
     return new_exception(TE_SYNTAX, "Syntax error at '~~', syntax: Integer ~~ val", interp);
