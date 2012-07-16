@@ -1,3 +1,4 @@
+2012/07/16	TOY_20120716	0.3.0
 2012/06/10	TOY_20120610	0.2.0
 2011/08/28	TOY_20110828	0.1.3
 2009/11/01	TOY_20091101	0.1.2
@@ -458,5 +459,9 @@ $Id: RELEASE,v 1.68 2012/06/10 07:38:48 mit-sato Exp $
 2012/07/10:
 	commands.c
 		Add multiple variable set feature to 'set' command.
+
+2012/07/16:
+	types.[ch], interp.c, methods.c, commands.c
+		Add bit integer implimentation.
 
 #eof
